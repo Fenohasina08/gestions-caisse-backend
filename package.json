@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Fenohasina08/gestions-caisse-backend#readme",
   "dependencies": {
+    "argon2": "^0.44.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.1.0",

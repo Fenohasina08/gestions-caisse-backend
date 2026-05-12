@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Fenohasina08/gestions-caisse-backend/issues"
   },
-  "homepage": "https://github.com/Fenohasina08/gestions-caisse-backend#readme"
+  "homepage": "https://github.com/Fenohasina08/gestions-caisse-backend#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }

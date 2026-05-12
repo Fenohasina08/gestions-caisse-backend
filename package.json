@@ -2,39 +2,43 @@
   "name": "gestions-caisse-backend",
   "version": "1.0.0",
   "description": "this is the backend of the project",
-  "main": "index.js",
+  "main": "dist/server.js",
+  "type": "module",
   "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fenohasina08/gestions-caisse-backend.git"
+    "url": "git+https://github.com"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/Fenohasina08/gestions-caisse-backend/issues"
+    "url": "https://github.com"
   },
-  "homepage": "https://github.com/Fenohasina08/gestions-caisse-backend#readme",
+  "homepage": "https://github.com",
   "dependencies": {
-    "argon2": "^0.44.0",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3",
-    "pino": "^10.3.1",
-    "pino-http": "^11.0.0",
-    "zod": "^4.4.3"
+    "argon2": "^0.41.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^9.1.0",
+    "pino-http": "^10.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.7.0",
-    "prisma": "^7.8.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.2",
+    "pino-pretty": "^11.0.0",
+    "prisma": "^5.15.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^5.4.5"
   }
 }

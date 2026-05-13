@@ -1,12 +1,177 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
- }
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  phone         String?
+  password_hash String
+  role          Role      @default(CASHIER)
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  sales_cancelled Sale[]           @relation("SaleCancelledBy")
+  stock_movements StockMovement[]
+  audit_logs      AuditLog[]
+  cash_sessions   CashSession[]
+}
+
+model Product {
+  id              Int       @id @default(autoincrement())
+  name            String
+  sku             String?   @unique
+
+  buy_price       Decimal   @default(0) @db.Decimal(12,2)
+  sell_price      Decimal   @default(0) @db.Decimal(12,2)
+
+  stock_qty       Int       @default(0)
+  alert_threshold Int       @default(0)
+
+  is_active       Boolean   @default(true)
+  deleted_at      DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  sale_items      SaleItem[]
+  stock_movements StockMovement[]
+
+  @@index([sku])
+}
+
+model CashSession {
+  id              Int           @id @default(autoincrement())
+  user_id         Int
+
+  opened_at       DateTime      @default(now())
+  closed_at       DateTime?
+
+  opening_float   Decimal       @default(0) @db.Decimal(12,2)
+  closing_counted Decimal?      @db.Decimal(12,2)
+
+  status          SessionStatus @default(OPEN)
+
+  user            User          @relation(fields: [user_id], references: [id])
+  sales           Sale[]
+
+  @@index([user_id, status])
+  // La contrainte "un seul session ouverte par utilisateur" sera ajoutée après la migration:
+  // CREATE UNIQUE INDEX unique_open_session_per_user ON "CashSession" (user_id) WHERE status = 'OPEN';
+}
+
+model Sale {
+  id              Int            @id @default(autoincrement())
+  session_id      Int
+
+  total           Decimal        @db.Decimal(12,2)
+  amount_received Decimal        @db.Decimal(12,2)
+  change_given    Decimal        @db.Decimal(12,2)
+
+  payment_method  PaymentMethod
+  status          SaleStatus     @default(COMPLETED)
+
+  cancelled_by    Int?
+  cancel_reason   String?
+
+  idempotency_key String         @unique
+
+  created_at      DateTime       @default(now())
+
+  session         CashSession    @relation(fields: [session_id], references: [id])
+  items           SaleItem[]
+
+  cancelled_by_user User?        @relation("SaleCancelledBy", fields: [cancelled_by], references: [id])
+
+  @@index([session_id])
+}
+
+model SaleItem {
+  id           Int       @id @default(autoincrement())
+  sale_id      Int
+  product_id   Int
+
+  product_name String
+
+  qty          Int
+
+  unit_price   Decimal   @db.Decimal(12,2)
+  discount     Decimal   @default(0) @db.Decimal(12,2)
+
+  sale         Sale      @relation(fields: [sale_id], references: [id])
+  product      Product   @relation(fields: [product_id], references: [id])
+
+  @@index([sale_id])
+}
+
+model StockMovement {
+  id          Int       @id @default(autoincrement())
+  product_id  Int
+
+  type        StockType
+  qty         Int
+
+  reason      String?
+  buy_price   Decimal?  @db.Decimal(12,2)
+
+  created_by  Int
+  created_at  DateTime  @default(now())
+
+  product     Product   @relation(fields: [product_id], references: [id])
+  user        User      @relation(fields: [created_by], references: [id])
+
+  @@index([product_id])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+
+  action      String
+  entity      String
+  entity_id   Int?
+
+  old_value   String?
+  new_value   String?
+
+  ip_address  String?
+  created_at  DateTime @default(now())
+
+  user        User     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+// --- Énumérations ---
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+enum SaleStatus {
+  COMPLETED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE_MONEY
+}
+
+enum StockType {
+  IN
+  OUT
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+}

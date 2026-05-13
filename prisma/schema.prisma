@@ -47,3 +47,16 @@ model Product {
   @@check(stock_qty >= 0)
   @@check(sell_price >= 0)
 }
+
+model CashSession {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  opened_at       DateTime  @default(now())
+  closed_at       DateTime?
+  opening_float   Float     @default(0)
+  closing_counted Float?
+  status          String
+
+  user            User      @relation(fields: [user_id], references: [id])
+  sales           Sale[]
+}

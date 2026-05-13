@@ -27,3 +27,23 @@ model User {
   audit_logs      AuditLog[]
   cash_sessions   CashSession[]
 }
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  name            String
+  sku             String?   @unique
+  buy_price       Float     @default(0)
+  sell_price      Float     @default(0)
+  stock_qty       Int       @default(0)
+  alert_threshold Int       @default(0)
+  is_active       Boolean   @default(true)
+  deleted_at      DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  sale_items      SaleItem[]
+  stock_movements StockMovement[]
+
+  @@check(stock_qty >= 0)
+  @@check(sell_price >= 0)
+}

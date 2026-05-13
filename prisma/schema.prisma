@@ -91,3 +91,17 @@ model SaleItem {
   sale          Sale    @relation(fields: [sale_id], references: [id])
   product       Product @relation(fields: [product_id], references: [id])
 }
+
+model StockMovement {
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  type        String
+  qty         Int
+  reason      String?
+  buy_price   Float?
+  created_by  Int
+  created_at  DateTime @default(now())
+
+  product     Product @relation(fields: [product_id], references: [id])
+  user        User    @relation(fields: [created_by], references: [id])
+}

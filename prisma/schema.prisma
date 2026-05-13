@@ -9,14 +9,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
- }
+}
 
 model User {
   id            Int       @id @default(autoincrement())
   email         String    @unique
   phone         String?
   password_hash String
-  role          String
+  role          Role      @default(CASHIER)
   is_active     Boolean   @default(true)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
@@ -29,13 +29,16 @@ model User {
 }
 
 model Product {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   name            String
   sku             String?   @unique
-  buy_price       Float     @default(0)
-  sell_price      Float     @default(0)
+
+  buy_price       Decimal   @default(0)
+  sell_price      Decimal   @default(0)
+
   stock_qty       Int       @default(0)
   alert_threshold Int       @default(0)
+
   is_active       Boolean   @default(true)
   deleted_at      DateTime?
   created_at      DateTime  @default(now())
@@ -44,81 +47,112 @@ model Product {
   sale_items      SaleItem[]
   stock_movements StockMovement[]
 
-  @@check(stock_qty >= 0)
-  @@check(sell_price >= 0)
+  @@index([sku])
 }
 
 model CashSession {
-  id              Int       @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   user_id         Int
-  opened_at       DateTime  @default(now())
-  closed_at       DateTime?
-  opening_float   Float     @default(0)
-  closing_counted Float?
-  status          String
 
-  user            User      @relation(fields: [user_id], references: [id])
+  opened_at       DateTime      @default(now())
+  closed_at       DateTime?
+
+  opening_float   Decimal       @default(0)
+  closing_counted Decimal?
+
+  status          SessionStatus @default(OPEN)
+
+  user            User          @relation(fields: [user_id], references: [id])
   sales           Sale[]
+
+  @@index([user_id, status])
 }
 
 model Sale {
-  id                Int      @id @default(autoincrement())
-  session_id        Int
-  total             Float
-  amount_received   Float
-  change_given      Float
-  payment_method    String
-  status            String
-  cancelled_by      Int?
-  cancel_reason     String?
-  idempotency_key   String   @unique
-  created_at        DateTime @default(now())
+  id              Int            @id @default(autoincrement())
+  session_id      Int
 
-  session          CashSession @relation(fields: [session_id], references: [id])
-  items            SaleItem[]
+  total           Decimal
+  amount_received Decimal
+  change_given    Decimal
+
+  payment_method  PaymentMethod
+  status          SaleStatus     @default(COMPLETED)
+
+  cancelled_by    Int?
+  cancel_reason   String?
+
+  idempotency_key String         @unique
+
+  created_at      DateTime       @default(now())
+
+  session         CashSession    @relation(fields: [session_id], references: [id])
+  items           SaleItem[]
+
   cancelled_by_user User? @relation("SaleCancelledBy", fields: [cancelled_by], references: [id])
+
+  @@index([session_id])
 }
 
 model SaleItem {
-  id            Int     @id @default(autoincrement())
-  sale_id       Int
-  product_id    Int
-  product_name  String
-  qty           Int
-  unit_price    Float
-  discount      Float   @default(0)
+  id           Int      @id @default(autoincrement())
+  sale_id      Int
+  product_id   Int
 
-  sale          Sale    @relation(fields: [sale_id], references: [id])
-  product       Product @relation(fields: [product_id], references: [id])
+  product_name String
+
+  qty          Int
+
+  unit_price   Decimal
+  discount     Decimal  @default(0)
+
+  sale         Sale     @relation(fields: [sale_id], references: [id])
+  product      Product  @relation(fields: [product_id], references: [id])
+
+  @@index([sale_id])
 }
 
 model StockMovement {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   product_id  Int
-  type        String
-  qty         Int
-  reason      String?
-  buy_price   Float?
-  created_by  Int
-  created_at  DateTime @default(now())
 
-  product     Product @relation(fields: [product_id], references: [id])
-  user        User    @relation(fields: [created_by], references: [id])
+  type        StockType
+  qty         Int
+
+  reason      String?
+  buy_price   Decimal?
+
+  created_by  Int
+  created_at  DateTime  @default(now())
+
+  product     Product   @relation(fields: [product_id], references: [id])
+  user        User     @relation(fields: [created_by], references: [id])
+
+  @@index([product_id])
 }
 
 model AuditLog {
   id          Int      @id @default(autoincrement())
   user_id     Int
+
   action      String
   entity      String
   entity_id   Int?
+
   old_value   String?
   new_value   String?
+
   ip_address  String?
   created_at  DateTime @default(now())
 
   user        User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
 }
+
+//
+// ENUMS
+//
 
 enum Role {
   ADMIN

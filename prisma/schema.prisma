@@ -60,3 +60,21 @@ model CashSession {
   user            User      @relation(fields: [user_id], references: [id])
   sales           Sale[]
 }
+
+model Sale {
+  id                Int      @id @default(autoincrement())
+  session_id        Int
+  total             Float
+  amount_received   Float
+  change_given      Float
+  payment_method    String
+  status            String
+  cancelled_by      Int?
+  cancel_reason     String?
+  idempotency_key   String   @unique
+  created_at        DateTime @default(now())
+
+  session          CashSession @relation(fields: [session_id], references: [id])
+  items            SaleItem[]
+  cancelled_by_user User? @relation("SaleCancelledBy", fields: [cancelled_by], references: [id])
+}

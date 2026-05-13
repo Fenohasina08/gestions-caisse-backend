@@ -119,3 +119,30 @@ model AuditLog {
 
   user        User @relation(fields: [user_id], references: [id])
 }
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+enum SaleStatus {
+  COMPLETED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE_MONEY
+}
+
+enum StockType {
+  IN
+  OUT
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+}

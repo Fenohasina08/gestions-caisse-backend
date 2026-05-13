@@ -10,3 +10,20 @@ generator client {
 datasource db {
   provider = "postgresql"
  }
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  phone         String?
+  password_hash String
+  role          String
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  sales_cancelled Sale[]   @relation("SaleCancelledBy")
+  stock_movements StockMovement[]
+  audit_logs      AuditLog[]
+  cash_sessions   CashSession[]
+}
